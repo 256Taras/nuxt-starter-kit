@@ -4,16 +4,13 @@ import { canCancel } from "../../entity";
 import { useCancelBooking } from "./use-cancel-booking";
 import { Button } from "#src/common/components/atoms/button";
 import { Input } from "#src/common/components/atoms/input";
-import type { UUID } from "#src/types";
 import { Ban } from "lucide-vue-next";
 
 const props = defineProps<{
   booking: Booking;
 }>();
 
-const { isFormOpen, reason, inputRef, isPending, toggle, close, confirm } = useCancelBooking(
-  () => props.booking.id as UUID,
-);
+const { isFormOpen, reason, inputRef, isPending, toggle, close, confirm } = useCancelBooking(() => props.booking.id);
 </script>
 
 <template>

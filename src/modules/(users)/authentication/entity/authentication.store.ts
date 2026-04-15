@@ -9,7 +9,9 @@ export const useAuthenticationStore = defineStore("authentication", () => {
   const refreshToken = useCookie<string | null>(AUTH_CONFIG.cookies.refreshToken, AUTH_CONFIG.cookieOptions);
 
   const currentUser = ref<User | null>(null);
-  const isAuthenticated = computed(() => currentUser.value !== null);
+  // Auth state is derived from the cookie (reactive, SSR-safe) so UI doesn't
+  // flicker from guest → authenticated while `currentUser` is hydrated async.
+  const isAuthenticated = computed(() => !!accessToken.value);
 
   function setCredentials(credentials: Credentials) {
     accessToken.value = credentials.accessToken;

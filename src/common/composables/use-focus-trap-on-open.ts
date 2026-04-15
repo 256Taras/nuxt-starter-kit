@@ -57,8 +57,10 @@ export function useFocusTrapOnOpen(): FocusTrapOnOpen {
     if (open) {
       previousFocus.value = (document.activeElement as HTMLElement) ?? null;
       await nextTick();
-      dialogRef.value?.focus();
-      dialogRef.value?.addEventListener("keydown", handleTabKey);
+      if (!dialogRef.value) return;
+      const focusable = dialogRef.value.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
+      (focusable[0] ?? dialogRef.value).focus();
+      dialogRef.value.addEventListener("keydown", handleTabKey);
     } else {
       dialogRef.value?.removeEventListener("keydown", handleTabKey);
       previousFocus.value?.focus();

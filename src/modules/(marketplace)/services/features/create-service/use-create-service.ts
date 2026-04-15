@@ -34,6 +34,9 @@ export function useCreateService(providerId: () => UUID) {
           name: values.name,
           price: values.price,
           duration: values.duration,
+          // Backend default is "draft" and /services list filters to "active" only,
+          // so new services would be invisible. Publish immediately on create.
+          status: "active",
           ...stripEmpty({ description: values.description, imageUrl: values.imageUrl }),
         },
       },

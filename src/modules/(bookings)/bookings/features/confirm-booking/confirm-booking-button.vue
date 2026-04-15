@@ -3,14 +3,13 @@ import type { Booking } from "../../entity";
 import { canConfirm } from "../../entity";
 import { useConfirmBooking } from "./use-confirm-booking";
 import { Button } from "#src/common/components/atoms/button";
-import type { UUID } from "#src/types";
 import { CheckCircle } from "lucide-vue-next";
 
 const props = defineProps<{
   booking: Booking;
 }>();
 
-const { trigger, isPending } = useConfirmBooking(() => props.booking.id as UUID);
+const { trigger, isPending } = useConfirmBooking(() => props.booking.id);
 </script>
 
 <template>

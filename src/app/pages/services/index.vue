@@ -61,8 +61,19 @@ function setPage(page: number) {
       <EmptyState
         v-if="services.length === 0"
         title="No services yet"
-        description="Create one from a provider page."
-      />
+      >
+        <template #action>
+          <Button as-child>
+            <NuxtLink :to="routes.services.create()">
+              <Plus
+                :size="16"
+                class="mr-2"
+              />
+              Create your first service
+            </NuxtLink>
+          </Button>
+        </template>
+      </EmptyState>
 
       <template v-else>
         <div class="rounded-lg border bg-card shadow-sm overflow-hidden">

@@ -3,14 +3,13 @@ import type { User } from "../../entity";
 import { getFullName } from "../../entity";
 import { useDeleteUser } from "./use-delete-user";
 import { Button } from "#src/common/components/atoms/button";
-import type { UUID } from "#src/types";
 import { Trash2 } from "lucide-vue-next";
 
 const props = defineProps<{
   user: User;
 }>();
 
-const { isOpen, dialogRef, isPending, open, close, confirm } = useDeleteUser(() => props.user.id as UUID);
+const { isOpen, dialogRef, isPending, open, close, confirm } = useDeleteUser(() => props.user.id);
 </script>
 
 <template>

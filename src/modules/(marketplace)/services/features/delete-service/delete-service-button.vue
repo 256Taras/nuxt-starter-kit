@@ -2,14 +2,13 @@
 import type { Service } from "../../entity";
 import { useDeleteService } from "./use-delete-service";
 import { Button } from "#src/common/components/atoms/button";
-import type { UUID } from "#src/types";
 import { Trash2 } from "lucide-vue-next";
 
 const props = defineProps<{
   service: Service;
 }>();
 
-const { isOpen, dialogRef, isPending, open, close, confirm } = useDeleteService(() => props.service.id as UUID);
+const { isOpen, dialogRef, isPending, open, close, confirm } = useDeleteService(() => props.service.id);
 </script>
 
 <template>

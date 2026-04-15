@@ -12,6 +12,15 @@ const API_BASE_URL =
 const API_TIMEOUT_MS = 30_000;
 const API_RETRIES = 1;
 
+// Backend auth endpoints that verify the refresh token (x-refresh-token header)
+// instead of the access token — see node-starter-kit auth.router.v1.ts.
+const REFRESH_TOKEN_ENDPOINTS = ["/v1/auth/refresh-tokens", "/v1/auth/log-out"];
+const REFRESH_TOKEN_HEADER = "x-refresh-token";
+
+function needsRefreshTokenHeader(url: string): boolean {
+  return REFRESH_TOKEN_ENDPOINTS.some((endpoint) => url.includes(endpoint));
+}
+
 let refreshPromise: Promise<boolean> | null = null;
 
 async function tryRefreshTokens(): Promise<boolean> {
@@ -25,7 +34,7 @@ async function tryRefreshTokens(): Promise<boolean> {
     }>("/v1/auth/refresh-tokens", {
       baseURL: API_BASE_URL,
       method: "PUT",
-      headers: { Authorization: `Bearer ${refreshToken}` },
+      headers: { [REFRESH_TOKEN_HEADER]: refreshToken },
     });
 
     useCookie(AUTH_CONFIG.cookies.accessToken).value = credentials.accessToken;
@@ -34,6 +43,25 @@ async function tryRefreshTokens(): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+/**
+ * Deduped refresh — if multiple callers (proactive timer, reactive 401 handler)
+ * fire simultaneously, they share the same in-flight request.
+ */
+export function runRefresh(): Promise<boolean> {
+  if (!refreshPromise) {
+    refreshPromise = tryRefreshTokens().finally(() => {
+      refreshPromise = null;
+    });
+  }
+  return refreshPromise;
+}
+
+function signOutAndRedirect(): void {
+  useCookie(AUTH_CONFIG.cookies.accessToken).value = null;
+  useCookie(AUTH_CONFIG.cookies.refreshToken).value = null;
+  navigateTo("/sign-in");
 }
 
 export const createClientConfig: CreateClientConfig = (config) => {
@@ -45,11 +73,25 @@ export const createClientConfig: CreateClientConfig = (config) => {
     headers: {
       "Content-Type": "application/json",
     },
-    onRequest({ options }) {
+    onRequest({ request, options }) {
+      const url = typeof request === "string" ? request : request.url;
+      const existing = options.headers as unknown as Record<string, string>;
+
+      if (needsRefreshTokenHeader(url)) {
+        const refreshToken = useCookie(AUTH_CONFIG.cookies.refreshToken).value;
+        if (refreshToken) {
+          options.headers = {
+            ...existing,
+            [REFRESH_TOKEN_HEADER]: refreshToken,
+          } as unknown as typeof options.headers;
+        }
+        return;
+      }
+
       const accessToken = useCookie(AUTH_CONFIG.cookies.accessToken).value;
       if (accessToken) {
         options.headers = {
-          ...(options.headers as unknown as Record<string, string>),
+          ...existing,
           Authorization: `Bearer ${accessToken}`,
         } as unknown as typeof options.headers;
       }
@@ -58,33 +100,32 @@ export const createClientConfig: CreateClientConfig = (config) => {
       if (response.status !== 401) return;
 
       const url = typeof request === "string" ? request : request.url;
-      if (url.includes("/v1/auth/refresh-tokens")) {
-        useCookie(AUTH_CONFIG.cookies.accessToken).value = null;
-        useCookie(AUTH_CONFIG.cookies.refreshToken).value = null;
-        navigateTo("/sign-in");
+
+      // 401 on refresh/logout endpoint is terminal — cookies are already
+      // dead weight, drop them and bounce to sign-in.
+      if (needsRefreshTokenHeader(url)) {
+        signOutAndRedirect();
         return;
       }
 
-      if (!refreshPromise) {
-        refreshPromise = tryRefreshTokens().finally(() => {
-          refreshPromise = null;
-        });
-      }
-      const refreshed = await refreshPromise;
-
+      const refreshed = await runRefresh();
       if (!refreshed) {
-        useCookie(AUTH_CONFIG.cookies.accessToken).value = null;
-        useCookie(AUTH_CONFIG.cookies.refreshToken).value = null;
-        navigateTo("/sign-in");
+        signOutAndRedirect();
         return;
       }
 
+      // Throwing a Promise from onResponseError makes ofetch use its result
+      // as the original request's response. baseURL is passed explicitly in
+      // case `url` is a relative path.
       const newToken = useCookie(AUTH_CONFIG.cookies.accessToken).value;
-      options.headers = {
-        ...(options.headers as unknown as Record<string, string>),
-        Authorization: `Bearer ${newToken}`,
-      } as unknown as typeof options.headers;
-      throw ofetch(url, { ...options, headers: options.headers });
+      throw ofetch(url, {
+        ...options,
+        baseURL: API_BASE_URL,
+        headers: {
+          ...(options.headers as unknown as Record<string, string>),
+          Authorization: `Bearer ${newToken}`,
+        },
+      });
     },
   };
 };

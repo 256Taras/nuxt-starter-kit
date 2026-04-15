@@ -2,14 +2,13 @@
 import type { Provider } from "../../entity";
 import { useDeleteProvider } from "./use-delete-provider";
 import { Button } from "#src/common/components/atoms/button";
-import type { UUID } from "#src/types";
 import { Trash2 } from "lucide-vue-next";
 
 const props = defineProps<{
   provider: Provider;
 }>();
 
-const { isOpen, dialogRef, isPending, open, close, confirm } = useDeleteProvider(() => props.provider.id as UUID);
+const { isOpen, dialogRef, isPending, open, close, confirm } = useDeleteProvider(() => props.provider.id);
 </script>
 
 <template>

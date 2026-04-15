@@ -13,7 +13,16 @@ export default defineNuxtConfig({
     "#src": fileURLToPath(new URL("./src", import.meta.url)),
   },
 
-  modules: ["@pinia/nuxt", "@nuxt/eslint", "@vueuse/nuxt", "@vee-validate/nuxt", "dayjs-nuxt"],
+  modules: ["@pinia/nuxt", "@nuxt/eslint", "@vueuse/nuxt", "@vee-validate/nuxt", "dayjs-nuxt", "@nuxtjs/color-mode"],
+
+  // shadcn-vue dark mode: adds `.dark` class on <html>, with SSR-safe inline
+  // script injected by the module (no FOUC). Preference persists to cookie.
+  colorMode: {
+    classSuffix: "",
+    preference: "system",
+    fallback: "light",
+    storageKey: "color-mode",
+  },
 
   dir: {
     assets: "app/assets",
