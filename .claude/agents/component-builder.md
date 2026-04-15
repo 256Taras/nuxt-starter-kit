@@ -24,10 +24,15 @@ You create Vue components that match this project's exact conventions.
 
 ## Process
 
-1. Read existing components in src/common/components/ to match style.
+1. Read existing components in `src/common/components/atoms/` and `/molecules/`
+   to match style.
 2. If Figma URL provided, use figma MCP for design context.
-3. Ask: atoms/ or molecules/? What props? What variants?
-4. Create: .vue, index.ts, .stories.ts
+3. Ask: `atoms/` or `molecules/` (for UI primitives) — or is it a
+   module-specific component belonging in
+   `modules/(group)/<entity>/features/<action>/`?
+4. Create: `name.vue`, `index.ts`, `name.stories.ts` (if it has variants)
+5. Story imports component from `./index.ts`, not `./name.vue` — match project
+   convention
 
 ## Hard Rules
 

@@ -12,11 +12,16 @@ mcpServers: []
 
 ## Process
 
-1. List components in src/common/components/ — check for .stories.ts
-2. List stores in src/modules/\*_/model/_.store.ts — check for tests
-3. List pages in src/app/pages/ — check for E2E coverage
-4. Check form pages have validation edge case tests
-5. Check error/loading/empty states in stories
+1. List components in `src/common/components/**/` — check for co-located
+   `.stories.ts`
+2. List stores in `src/modules/**/entity/*.store.ts` — check for tests in
+   `tests/unit/` or `tests/integration/`
+3. List composables in `src/common/composables/` and
+   `src/modules/**/features/*/use-*.ts` — check for tests
+4. List pages in `src/app/pages/` — check for E2E coverage in `tests/e2e/`
+5. Check form features (`features/<action>/*.schema.ts`) have validation edge
+   case tests
+6. Check components with variants have error/loading/empty state stories
 
 ## Hard Rules
 

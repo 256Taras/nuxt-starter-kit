@@ -141,16 +141,20 @@ out of a module. Push it into a feature or an entity hook.
 <!-- pages/bookings/[id]/index.vue -->
 <script setup lang="ts">
 import { useRouteId } from "#src/common/composables/use-route-id";
-import { useBookingDetail } from "#src/modules/(bookings)/bookings";
+import { useBookingDetailQuery } from "#src/modules/(bookings)/bookings";
 import { CancelBookingButton } from "#src/modules/(bookings)/bookings";
 import { ConfirmBookingButton } from "#src/modules/(bookings)/bookings";
 import { CompleteBookingButton } from "#src/modules/(bookings)/bookings";
 import { PayBookingButton } from "#src/modules/(bookings)/payments";
-import { BookingDetailsCard } from "#src/modules/(bookings)/bookings";
 import { BackLink, PageHeader } from "#src/common/components/molecules";
 
 const bookingId = useRouteId("bookings-id");
-const { booking, isLoading, isError, error } = useBookingDetail(bookingId);
+const {
+  data: booking,
+  isLoading,
+  isError,
+  error,
+} = useBookingDetailQuery(bookingId);
 </script>
 
 <template>
@@ -161,7 +165,6 @@ const { booking, isLoading, isError, error } = useBookingDetail(bookingId);
 
   <template v-else-if="booking">
     <PageHeader :title="`Booking ${booking.id}`" />
-    <BookingDetailsCard :booking="booking" />
     <div class="flex gap-2">
       <ConfirmBookingButton :booking="booking" />
       <CompleteBookingButton :booking="booking" />
@@ -227,19 +230,18 @@ detail.
 ```ts
 // modules/(bookings)/bookings/index.ts — public API
 export {
-  useBookingDetail,
-  useBookingsList,
+  useBookingDetailQuery,
+  useBookingsListQuery,
   canCancel,
   canConfirm,
+  canComplete,
   canPay,
+  BOOKING_QUERY_KEYS,
 } from "./entity";
-export { BOOKING_QUERY_KEYS } from "./entity";
 export { CreateBookingForm } from "./features/create-booking";
 export { CancelBookingButton } from "./features/cancel-booking";
 export { ConfirmBookingButton } from "./features/confirm-booking";
 export { CompleteBookingButton } from "./features/complete-booking";
-export { BookingListTable } from "./features/booking-list";
-export { BookingDetailsCard } from "./features/booking-details-card";
 
 // NOT exported: individual mutations, schemas, internal hooks, dialog components
 export type { Booking, BookingListItem } from "./entity";

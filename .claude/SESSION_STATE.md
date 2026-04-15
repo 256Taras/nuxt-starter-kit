@@ -4,10 +4,12 @@
 `feat/marketplace-modules`
 
 ## Last commit
-`012a96c feat: refactor user profile types and add UUID type`
+`cbbd641 feat: add color mode support with @nuxtjs/color-mode module`
 
 ## Commits since yesterday
 ```
+cbbd641 feat: add color mode support with @nuxtjs/color-mode module
+718511a refactor: standardize pagination limits and improve query key types
 012a96c feat: refactor user profile types and add UUID type
 2794b6e feat: add card component and related subcomponents
 ```

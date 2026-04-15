@@ -115,8 +115,8 @@ tests/
 └── helpers/                     # test factories, render helpers
 ```
 
-**Read [`.claude/ARCHITECTURE.md`](./.claude/ARCHITECTURE.md) before creating
-any new file.** Decision tree included.
+**Read [`docs/architecture.md`](./docs/architecture.md) before creating any new
+file.** Decision tree included.
 
 ---
 
@@ -164,20 +164,20 @@ any new file.** Decision tree included.
 
 ## 🧰 Stack
 
-|                  |                                                   |
-| ---------------- | ------------------------------------------------- |
-| **Framework**    | Nuxt 4 + Vue 3                                    |
-| **Language**     | TypeScript (strict)                               |
-| **HTTP**         | `@hey-api/client-ofetch` + auto-generated SDK     |
-| **Server state** | TanStack Query (`@tanstack/vue-query`)            |
-| **Client state** | Pinia (setup stores only)                         |
-| **Forms**        | vee-validate + TypeBox + custom resolver          |
-| **UI**           | shadcn-vue + reka-ui + Tailwind 4                 |
-| **Icons**        | lucide-vue-next                                   |
-| **Dates**        | dayjs                                             |
-| **Tests**        | Vitest + @vue/test-utils + happy-dom + Playwright |
-| **Boundaries**   | eslint-plugin-boundaries + dependency-cruiser     |
-| **Pkg manager**  | pnpm only                                         |
+|                  |                                                                                        |
+| ---------------- | -------------------------------------------------------------------------------------- |
+| **Framework**    | Nuxt 4 + Vue 3                                                                         |
+| **Language**     | TypeScript (strict)                                                                    |
+| **HTTP**         | Generated SDK (`@hey-api/openapi-ts` + `@hey-api/client-ofetch` plugin, over `ofetch`) |
+| **Server state** | TanStack Query (`@tanstack/vue-query`)                                                 |
+| **Client state** | Pinia (setup stores only)                                                              |
+| **Forms**        | vee-validate + TypeBox + custom resolver                                               |
+| **UI**           | shadcn-vue + reka-ui + Tailwind 4                                                      |
+| **Icons**        | lucide-vue-next                                                                        |
+| **Dates**        | dayjs                                                                                  |
+| **Tests**        | Vitest + @vue/test-utils + happy-dom + Playwright                                      |
+| **Boundaries**   | eslint-plugin-boundaries + dependency-cruiser                                          |
+| **Pkg manager**  | pnpm only                                                                              |
 
 ---
 
@@ -213,7 +213,7 @@ modules/(bookings)/bookings/
 ## ⚡ Quick Start
 
 ```bash
-# 1. Install (Node 24+)
+# 1. Install (Node 22+)
 corepack enable
 pnpm install
 
@@ -291,18 +291,19 @@ This project includes a full `.claude/` configuration:
 - **Commands** — `/spec`, `/new-module`, `/new-component`, `/review-debate`,
   `/reflect`, `/standup`, `/tdd`
 
-See [`.claude/ARCHITECTURE.md`](./.claude/ARCHITECTURE.md),
-[`.claude/ELEGANCE.md`](./.claude/ELEGANCE.md),
+See [`docs/architecture.md`](./docs/architecture.md),
+[`docs/elegance.md`](./docs/elegance.md),
 [`.claude/REFLECTIONS.md`](./.claude/REFLECTIONS.md).
 
 ---
 
 ## 📚 Further Reading
 
-- [Architecture rules](./.claude/ARCHITECTURE.md) — single source of truth
-- [Elegance bar](./.claude/ELEGANCE.md) — before abstracting, read this
+- [Architecture rules](./docs/architecture.md) — single source of truth
+- [Elegance bar](./docs/elegance.md) — before abstracting, read this
+- [Frontend best practices](./docs/frontend-best-practices.md) — full
+  anti-patterns list
 - [Reflections](./.claude/REFLECTIONS.md) — lessons learned, append-only
-- [`docs/`](./docs/) — project structure, env, error handling, FAQ
 
 ---
 

@@ -32,9 +32,10 @@
 ## Stack
 
 Nuxt 4 · Vue 3 (`<script setup>`) · TypeScript strict · pnpm · TanStack Query
-(server state) · Pinia setup stores (client state) · `@hey-api/client-ofetch` +
-`@hey-api/openapi-ts` (generated SDK) · vee-validate + TypeBox · shadcn-vue +
-reka-ui + Tailwind 4 · lucide-vue-next · dayjs
+(server state) · Pinia setup stores (client state) · generated SDK
+(`@hey-api/openapi-ts` + `@hey-api/client-ofetch` plugin, over `ofetch`) ·
+vee-validate + TypeBox · shadcn-vue + reka-ui + Tailwind 4 · lucide-vue-next ·
+dayjs
 
 Backend: Fastify at `http://localhost:3100`.
 
@@ -101,7 +102,8 @@ export function useDeleteProviderMutation() {
   });
 }
 
-// 3. Custom mutationFn only when body needs serialization (stripEmpty, toISOString)
+// 3. Custom mutationFn only when body needs serialization
+//    (rare — most features just spread SDK mutation options)
 ```
 
 Callers use `{ path, body, query }` shape matching SDK contract.
@@ -147,16 +149,23 @@ pnpm plop component  # UI primitive
 ## Commands
 
 ```bash
-pnpm dev                # dev (HMR, SSR)
-pnpm build              # prod build
-pnpm check:types        # vue-tsc
-pnpm lint / lint:fix    # ESLint
-pnpm test               # vitest watch
-pnpm test:coverage      # vitest + coverage
-pnpm test:e2e           # playwright
-pnpm dep:check          # architecture boundaries
-pnpm gen:sdk            # regenerate SDK from OpenAPI
-pnpm plop               # scaffolding
+pnpm dev                    # dev (HMR, SSR)
+pnpm build                  # prod build
+pnpm preview                # preview prod build
+pnpm check:types            # vue-tsc
+pnpm lint / lint:fix        # ESLint
+pnpm prettier:fix           # format all files
+pnpm test                   # vitest watch
+pnpm test:unit              # unit tests only
+pnpm test:integration       # integration tests only
+pnpm test:coverage          # vitest + coverage
+pnpm test:e2e               # playwright
+pnpm dep:check              # architecture boundaries
+pnpm dep:report             # HTML violations report
+pnpm dep:graph              # SVG dependency graph
+pnpm gen:sdk                # regenerate SDK from OpenAPI
+pnpm plop                   # scaffolding
+pnpm storybook              # http://localhost:6006
 ```
 
 ## Naming
@@ -174,8 +183,14 @@ Types: `feat`, `fix`, `refactor`, `test`, `docs`, `build`, `chore`.
 
 ## Available Subagents
 
-`planner` · `component-builder` · `code-archaeologist` ·
-`defender`/`attacker`/`judge` (debate) · `meta-agent`
+**Planning/building:** `planner` · `component-builder` · `code-archaeologist` ·
+`meta-agent`
+
+**Review debate:** `defender` · `attacker` · `judge`
+
+**Auditors (haiku, read-only):** `accessibility-auditor` ·
+`api-contract-checker` · `bundle-watcher` · `dependency-auditor` ·
+`security-auditor` · `test-gap-analyzer`
 
 ## Model strategy
 
