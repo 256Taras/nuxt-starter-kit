@@ -1,0 +1,26 @@
+import type { MaybeRefOrGetter } from "vue";
+import { toValue } from "vue";
+import { use{{pascalCase action}}{{pascalCase entity}}Mutation } from "./{{kebabCase action}}-{{kebabCase entity}}.mutation";
+import { runWithToast } from "#src/common/utils/errors/run-with-toast";
+import type { UUID } from "#src/types";
+
+interface Use{{pascalCase action}}{{pascalCase entity}}Return {
+  trigger: () => Promise<boolean>;
+  isPending: ReturnType<typeof use{{pascalCase action}}{{pascalCase entity}}Mutation>["isPending"];
+}
+
+export function use{{pascalCase action}}{{pascalCase entity}}(
+  id: MaybeRefOrGetter<UUID>,
+): Use{{pascalCase action}}{{pascalCase entity}}Return {
+  const mutation = use{{pascalCase action}}{{pascalCase entity}}Mutation();
+
+  async function trigger(): Promise<boolean> {
+    return await runWithToast(
+      mutation.mutateAsync,
+      { path: { id: toValue(id) } },
+      { success: "{{pascalCase entity}} {{action}}ed", error: "Failed to {{action}} {{entity}}" },
+    );
+  }
+
+  return { trigger, isPending: mutation.isPending };
+}

@@ -54,7 +54,7 @@ Props destructuring is enabled. Use it.
 ```typescript
 import { type VariantProps, cva } from "class-variance-authority";
 import { Primitive } from "reka-ui";
-import { cn } from "#src/common/lib/cn";
+import { cn } from "#src/common/utils/styles/cn";
 
 const buttonVariants = cva("inline-flex items-center justify-center...", {
   variants: {

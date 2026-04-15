@@ -1,19 +1,25 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import { useAuthenticationStore } from "#src/modules/(users)/authentication";
-import { useAppRouter } from "#src/common/router/app-router";
-import { LogOut, User, Users } from "lucide-vue-next";
+import { useAuthenticationStore, LogOutButton } from "#src/modules/(users)/authentication";
+import { useAppRouter } from "#src/common/routing/app-router";
+import { User, Users, Store, Briefcase, Calendar } from "lucide-vue-next";
 
 const authStore = useAuthenticationStore();
-const { routes, pushTo } = useAppRouter();
-
-const isAuthenticated = computed(() => authStore.isAuthenticated);
+const { routes } = useAppRouter();
 </script>
 
 <template>
   <div class="min-h-screen bg-gray-50">
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-2 focus:bg-white"
+    >
+      Skip to main content
+    </a>
     <header class="bg-white shadow-sm border-b">
-      <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <nav
+        aria-label="Main navigation"
+        class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between"
+      >
         <NuxtLink
           :to="routes.home()"
           class="text-xl font-semibold text-gray-900"
@@ -22,7 +28,28 @@ const isAuthenticated = computed(() => authStore.isAuthenticated);
         </NuxtLink>
 
         <div class="flex items-center gap-4">
-          <template v-if="isAuthenticated">
+          <template v-if="authStore.isAuthenticated">
+            <NuxtLink
+              :to="routes.providers.list()"
+              class="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+            >
+              <Store :size="18" />
+              <span>Providers</span>
+            </NuxtLink>
+            <NuxtLink
+              :to="routes.services.list()"
+              class="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+            >
+              <Briefcase :size="18" />
+              <span>Services</span>
+            </NuxtLink>
+            <NuxtLink
+              :to="routes.bookings.list()"
+              class="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+            >
+              <Calendar :size="18" />
+              <span>Bookings</span>
+            </NuxtLink>
             <NuxtLink
               :to="routes.users.list()"
               class="flex items-center gap-2 text-gray-600 hover:text-gray-900"
@@ -37,13 +64,7 @@ const isAuthenticated = computed(() => authStore.isAuthenticated);
               <User :size="18" />
               <span>Profile</span>
             </NuxtLink>
-            <button
-              class="flex items-center gap-2 text-gray-600 hover:text-gray-900"
-              @click="authStore.logOut().then(() => pushTo.auth.signIn())"
-            >
-              <LogOut :size="18" />
-              <span>Log out</span>
-            </button>
+            <LogOutButton />
           </template>
           <template v-else>
             <NuxtLink
@@ -63,7 +84,10 @@ const isAuthenticated = computed(() => authStore.isAuthenticated);
       </nav>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main
+      id="main-content"
+      class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+    >
       <slot />
     </main>
   </div>

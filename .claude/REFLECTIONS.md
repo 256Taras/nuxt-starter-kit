@@ -17,3 +17,25 @@ Auto-imports are disabled — every import must be explicit, including vue
 composables
 
 ## Real entries (append below)
+
+[2026-04-10] [nuxt] When components["schemas"] is `never` in openapi-typescript
+output, extract types from
+`paths[...]["get"]["responses"][200]["content"]["application/json"]` — never
+hand-write DTOs [2026-04-10] [nuxt] useHttpClient needs `patch` method alongside
+get/post/put/delete — add it before implementing PATCH-based endpoints
+[2026-04-10] [tanstack-query] Cursor-based pagination requires separate
+CursorPaginationParams type (limit/after/before) — don't reuse offset
+PaginationParams [2026-04-11] [architecture] queries.ts must never import store
+— if mutation needs store side-effect, wrap mutateAsync + store call in a
+page-level closure and pass it to runWithToast [2026-04-11] [a11y]
+useFocusTrapOnOpen must intercept Tab/Shift-Tab on the dialog element and cycle
+focus — just calling dialogRef.focus() on open is not a real trap [2026-04-11]
+[vue] FormField must pass aria-describedby and aria-invalid to the slotted input
+via scoped slot props — without this, screen readers cannot announce field
+errors [2026-04-11] [vue] NuxtLink wrapping Button produces invalid
+`<a><button>` nesting — always use `<Button as-child><NuxtLink>` instead
+[2026-04-11] [refactoring] 10 parallel audit agents produce ~60 findings, but
+only ~18 pass the elegance bar (≥4 callsites OR bug fix OR semantic win) —
+filter ruthlessly before acting [2026-04-12] [meta] Saved distilled elegance
+rules to .claude/ELEGANCE.md — reference in every session via
+@.claude/ELEGANCE.md

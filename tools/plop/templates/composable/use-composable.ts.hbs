@@ -1,0 +1,13 @@
+import { ref } from "vue";
+import type { Ref } from "vue";
+
+interface Use{{pascalCase name}}Return {
+  // TODO: describe the return shape
+  value: Ref<string>;
+}
+
+export function use{{pascalCase name}}(): Use{{pascalCase name}}Return {
+  const value = ref("");
+
+  return { value };
+}

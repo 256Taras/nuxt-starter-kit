@@ -1,0 +1,14 @@
+// Module public API.
+// Re-export everything consumers (pages, other modules) may import.
+//
+// Entity:
+// export * from "./entity";    // never use export * — list explicitly:
+//
+// export type { {{pascalCase (singular name)}}, {{pascalCase (singular name)}}ListItem } from "./entity";
+// export { canEdit, {{upperSnakeCase (singular name)}}_QUERY_KEYS, use{{pascalCase name}}ListQuery, use{{pascalCase (singular name)}}DetailQuery } from "./entity";
+//
+// Features (add exports as you generate them):
+// export { Create{{pascalCase (singular name)}}Form } from "./features/create-{{kebabCase (singular name)}}";
+// export { Edit{{pascalCase (singular name)}}Button } from "./features/edit-{{kebabCase (singular name)}}";
+
+export {};

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { useAppRouter } from "#src/common/router/app-router";
+import { clearError } from "#imports";
+import { useAppRouter } from "#src/common/routing/app-router";
 import { Button } from "#src/common/components/atoms/button";
 
 const props = defineProps<{
@@ -31,10 +32,10 @@ function handleClearError() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+  <main class="min-h-screen bg-gray-50 flex items-center justify-center px-4">
     <div class="text-center space-y-6 max-w-md">
       <p class="text-6xl font-bold text-muted-foreground">{{ error.statusCode }}</p>
-      <h1 class="text-2xl font-semibold text-foreground">{{ title }}</h1>
+      <h1 class="text-2xl font-bold text-foreground">{{ title }}</h1>
       <p class="text-muted-foreground">{{ description }}</p>
       <div class="flex gap-3 justify-center">
         <Button @click="handleClearError">Go home</Button>
@@ -45,5 +46,5 @@ function handleClearError() {
         >
       </div>
     </div>
-  </div>
+  </main>
 </template>

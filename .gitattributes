@@ -1,0 +1,3 @@
+# Mark generated SDK as auto-generated so GitHub collapses diffs and
+# excludes them from language stats.
+src/common/api/sdk/** linguist-generated=true

@@ -1,283 +1,594 @@
-# Modular Vue Architecture
+# Architecture
 
-Architecture prompt for Vue 3 / Nuxt 3 projects. Inspired by FEOD (Fractal
-Entity Oriental Design) and FSD (Feature-Sliced Design), but adapted with
-concrete technology choices and a Pinia-centric hook chain. Not a faithful
-implementation of either methodology — use this prompt as the single source of
-truth.
+> This document is the **single source of truth** about how code is organized in
+> this project. Read it before creating a new file or deciding where code goes.
+> It is auto-loaded in every session.
 
-## Stack
+## One-sentence summary
 
-- **Framework:** Vue 3 + Nuxt 4 (Composition API, `<script setup>`)
-- **Language:** TypeScript strict mode
-- **Package manager:** pnpm (only pnpm, never npm/yarn)
-- **State:** Pinia (setup stores only)
-- **Server state:** TanStack Query (`@tanstack/vue-query`)
-- **HTTP:** ofetch (via `useHttpClient` wrapper)
-- **UI library:** shadcn-vue + Tailwind CSS
-- **Icons:** lucide-vue-next
-- **API types:** auto-generated from OpenAPI via `openapi-typescript`
-- **Runtime validation:** TypeBox (`@sinclair/typebox`) — only where needed
+**Pages are thin orchestrators. Modules own business logic (entity + features).
+Common holds UI primitives. No `widgets/` layer — composites live in layouts
+(chrome) or as feature-composites in the primary module. No nested modules.**
 
-## Core Principles
+## The three-layer structure
 
-1. **Pragmatic over ceremonial.** No classes, no DDD aggregates, no use case
-   layers, no repository pattern. Plain types + Pinia stores + functions.
-2. **Pinia store is the main composer.** It owns state, business logic, helpers,
-   predicates, and orchestrates API + TanStack Query. UI talks to the store.
-3. **4-layer hook chain.** Every API-touching module follows
-   `useHttpClient -> useXxxApi -> useXxx -> useXxxStore`.
-4. **Explicit public API.** Every module exposes a manually-curated `index.ts`
-   with named exports. No `export *`.
-5. **Fractal modules allowed but not forced.** A module may contain sub-modules
-   when it genuinely grows. Small modules stay flat.
-6. **Internal module structure is a recommendation, not a law.** Small modules
-   can skip folders entirely. Large modules use the full structure.
-7. **Files in kebab-case. Always.** Including `.vue` files.
-8. **API types come from the backend.** Generated from OpenAPI, never
-   hand-written for DTOs.
+```text
+┌──────────────────────────────────────────────────┐
+│  PAGES    — orchestrators, no business logic     │
+├──────────────────────────────────────────────────┤
+│  MODULES  — entity + features (flat, no nesting) │
+├──────────────────────────────────────────────────┤
+│  COMMON   — UI primitives, layouts, utils        │
+├──────────────────────────────────────────────────┤
+│  SDK      — auto-generated (never edit)          │
+└──────────────────────────────────────────────────┘
 
-## Folder Structure
-
+Imports: top → bottom only. Never sideways, never bottom → top.
 ```
-src/
-├── app.vue                   <- root component
-├── app/                      <- Nuxt app layer (all client-side conventions)
-│   ├── assets/               <- styles, fonts, images
-│   ├── layouts/              <- page layouts
-│   ├── middleware/            <- route guards
-│   ├── pages/                <- file-based routing
-│   └── plugins/              <- Nuxt plugins
+
+## Module structure
+
+Each module represents one backend entity (one API resource).
+
+```text
+modules/(group)/<entity-name>/
+├── entity/                     # data + rules about the entity
+│   ├── <name>.types.ts         #   type aliases from SDK, as-const enums
+│   ├── <name>.domain.ts        #   predicates (canCancel), formatters, status maps
+│   ├── <name>.queries.ts       #   shared queries/query keys (list, detail)
+│   └── index.ts
 │
-├── modules/                  <- business logic grouped by domain
-│   ├── (users)/              <- GROUP: parentheses = visual grouping only
-│   │   ├── profiles/         <- module
-│   │   ├── authentication/
-│   │   └── access-control/
-│   │
-│   ├── (orders)/
-│   │   ├── order-list/
-│   │   └── checkout/
-│   │
-│   └── (billing)/
-│       └── subscriptions/
+├── features/                   # user actions / reusable UI blocks with logic
+│   ├── create-<entity>/
+│   │   ├── create-<entity>.mutation.ts
+│   │   ├── create-<entity>.schema.ts
+│   │   ├── create-<entity>-form.vue
+│   │   ├── use-create-<entity>.ts    # orchestration: toast, redirect, invalidate
+│   │   └── index.ts
+│   ├── cancel-<entity>/
+│   │   ├── cancel-<entity>.mutation.ts
+│   │   ├── cancel-<entity>-button.vue     # self-contained: includes canCancel check
+│   │   ├── cancel-<entity>-dialog.vue
+│   │   ├── use-cancel-<entity>.ts
+│   │   └── index.ts
+│   └── <entity>-list/
+│       ├── <entity>-list.queries.ts       # own queries if needed
+│       ├── <entity>-list-table.vue
+│       ├── use-<entity>-list.ts
+│       └── index.ts
 │
-└── common/                   <- shared, business-agnostic code
-    ├── api/                  <- useHttpClient + generated OpenAPI schema
-    ├── lib/                  <- shadcn utility (cn())
-    ├── ui/                   <- shadcn-vue primitives (each in own folder)
-    ├── validation/           <- TypeBox helpers + vee-validate resolver
-    ├── utils/                <- constants, useAppRouter
-    └── types/
+└── index.ts                    # public API: what pages and other modules may import
 ```
 
-### Page-Specific Components
+## Flat hierarchy — no nested modules
 
-Components used only on a single page live in a `.components/` folder next to
-the page. The dot prefix prevents Nuxt from generating routes for them.
+**Never** create sub-modules. If entities relate hierarchically, encode it in
+the **name prefix**, not the folder structure.
 
-```
-app/pages/
-├── index.vue
-├── profile/
-│   ├── index.vue
-│   └── .components/
-│       ├── profile-card.vue
-│       └── profile-edit-form.vue
-└── users/
-    ├── index.vue
-    ├── [id].vue
-    └── .components/
-        ├── users-table.vue
-        └── user-filters.vue
+Wrong (nested):
+
+```text
+modules/(education)/mini-courses/blocks/lessons/   ❌
 ```
 
-Import with relative paths:
+Right (flat with prefixes):
 
-```typescript
-import ProfileCard from "./.components/profile-card.vue";
+```text
+modules/(education)/
+├── mini-courses/
+├── mini-course-blocks/         # prefix carries the parent relation
+└── mini-course-lessons/        # prefix again
 ```
 
-**Rules:**
+Maximum nesting is **2 levels**: `modules/(group)/<module>/`. Never deeper.
 
-- Only `.components/` with dot prefix — Nuxt 4 ignores dot-prefixed folders
-- `_components/` and `(components)/` do NOT work — Nuxt 4 creates routes from
-  them
-- If a component is used across multiple pages, move it to the module's `ui/`
-  folder
+## Entity vs Feature
 
-### Module Groups `(name)`
+|                                | Entity                                            | Feature                                     |
+| ------------------------------ | ------------------------------------------------- | ------------------------------------------- |
+| **Purpose**                    | Data + rules about the thing                      | User action / reusable UI block             |
+| **Contains**                   | types, domain predicates, shared queries          | mutation, UI, hook, schema                  |
+| **Has UI?**                    | No                                                | Yes                                         |
+| **Has mutations?**             | No (queries only — list, detail)                  | Yes — one mutation per feature              |
+| **Example**                    | `Booking` type, `canCancel`, `BookingStatusLabel` | `<CancelBookingButton>`, `useCancelBooking` |
+| **Knows about UI?**            | No                                                | Yes                                         |
+| **Knows about toast/routing?** | No                                                | Yes (inside hook)                           |
 
-Parentheses are purely organizational — they mark domain areas visually but have
-no runtime meaning. No group-level `index.ts`. Imports include the parentheses
-in the path: `#src/modules/(orders)/order-list`.
+Entity is the **pure data layer**. Feature is the **vertical slice** of a user
+action including its UI, logic, and side effects.
 
-### Common Folder
+**Entity → Feature** dependency is one-way: features import from entity. Entity
+never imports from features.
 
-`common/` has **no root `index.ts`**. Imports are always from specific
-sub-paths:
+## Pages — pure orchestrators
 
-- `import { UiButton } from '#src/common/ui/button'`
-- `import { useHttpClient } from '#src/common/api/use-http-client'`
+A page is a tree of imports from modules + common. Nothing else.
 
-## Module Structure: Flat vs Fractal
+### What pages MAY do
 
-### Flat Module (default for most cases)
+- Import feature components from modules: `<CancelBookingButton>`,
+  `<CreateBookingForm>`
+- Import entity hooks from modules: `useBookingDetail()`, `useBookingsList()`
+- Import UI primitives from common: `<Button>`, `<FormField>`, `<BackLink>`
+- Have local `.components/` folder — **only pure presentational UI**, no
+  business logic
+- Use routing composables: `useRouteId()`, `useQueryParam()`
+- Compose components with `v-if`, `v-for`, props, emit
+- Show loading / error / empty branches via `isLoading`, `isError`, `error` from
+  hooks
 
+### What pages MUST NOT do
+
+- Call `useMutation` or `useQuery` directly → use a module hook
+- Import `Type` / `Static` from `@sinclair/typebox` → schemas live in modules
+- Call `new Date().toISOString()`, `stripEmpty()` → serialization lives in the
+  mutation
+- Call domain predicates like `canCancel(booking)` → the feature component
+  checks itself
+- Import SDK functions directly → always through module queries
+- Write `try/catch` around mutations → use `runWithToast` inside a hook
+- Show toasts directly → inside hooks
+- Import from another page — never
+
+### Size rule
+
+If a page's `<script setup>` is more than **~20 lines**, something is leaking
+out of a module. Push it into a feature or an entity hook.
+
+## What pages look like
+
+```vue
+<!-- pages/bookings/[id]/index.vue -->
+<script setup lang="ts">
+import { useRouteId } from "#src/common/composables/use-route-id";
+import { useBookingDetail } from "#src/modules/(bookings)/bookings";
+import { CancelBookingButton } from "#src/modules/(bookings)/bookings";
+import { ConfirmBookingButton } from "#src/modules/(bookings)/bookings";
+import { CompleteBookingButton } from "#src/modules/(bookings)/bookings";
+import { PayBookingButton } from "#src/modules/(bookings)/payments";
+import { BookingDetailsCard } from "#src/modules/(bookings)/bookings";
+import { BackLink, PageHeader } from "#src/common/components/molecules";
+
+const bookingId = useRouteId("bookings-id");
+const { booking, isLoading, isError, error } = useBookingDetail(bookingId);
+</script>
+
+<template>
+  <BackLink to="/bookings">Back to bookings</BackLink>
+
+  <div v-if="isLoading">Loading...</div>
+  <div v-else-if="isError">{{ error?.userMessage ?? "Failed to load" }}</div>
+
+  <template v-else-if="booking">
+    <PageHeader :title="`Booking ${booking.id}`" />
+    <BookingDetailsCard :booking="booking" />
+    <div class="flex gap-2">
+      <ConfirmBookingButton :booking="booking" />
+      <CompleteBookingButton :booking="booking" />
+      <PayBookingButton :booking="booking" />
+      <CancelBookingButton :booking="booking" />
+    </div>
+  </template>
+</template>
 ```
-module-name/
-├── api/
-│   └── use-<name>-api.ts       <- calls useHttpClient, returns { list, getById, ... }
-├── composables/
-│   └── use-<name>.ts           <- wraps api with TanStack Query (useQuery, useMutation)
-├── model/
-│   ├── <name>.types.ts         <- re-exports from generated schema + local additions
-│   ├── <name>.schemas.ts       <- TypeBox schemas for forms (only if needed)
-│   └── <name>.store.ts         <- Pinia store: THE composer
-├── ui/
-│   ├── ui-<name>-row.vue
-│   └── ...
-└── index.ts                    <- explicit public API
+
+Note: page does **not** check `v-if="canCancel(booking)"` — the button itself
+decides internally whether to render.
+
+## Layer import rules
+
+```text
+Layer    | May import from                      | Never imports
+─────────┼──────────────────────────────────────┼──────────────────────────
+pages    | modules (via index), common          | other pages, SDK directly,
+         |                                      | @sinclair/typebox
+modules  | common, SDK, other modules (index)   | pages
+common   | SDK types                            | modules, pages
+SDK      | nothing (self-contained)             | —
 ```
 
-### Tiny Module (when folders are overkill)
+### Module internal import rules
 
+Inside a module, layering is also strict:
+
+```text
+File              | May import from                      | Never imports
+──────────────────┼──────────────────────────────────────┼────────────────
+features/*        | entity/, common, SDK, other modules  | other features
+                  | via index                            | in same module
+entity/queries.ts | entity/types, SDK, other module keys | store, features
+entity/domain.ts  | entity/types                         | Vue, Pinia,
+                  |                                      | TanStack, SDK funcs
+entity/types.ts   | SDK types                            | runtime values
+                  |                                      | (except as-const)
 ```
-module-name/
-├── module-name.types.ts
-├── module-name.store.ts
-├── ui-module-name.vue
+
+## High cohesion + low coupling
+
+### Cohesion — everything that changes together lives together
+
+Adding "archive booking" means touching exactly one folder:
+
+```text
+modules/(bookings)/bookings/features/archive-booking/
+├── archive-booking.mutation.ts
+├── archive-booking-button.vue
+├── use-archive-booking.ts
 └── index.ts
 ```
 
-## The 4-Layer Hook Chain
+No edits anywhere else (except the module's `index.ts` to export).
+
+### Coupling — module internals are hidden
+
+Every module's `index.ts` is its **contract**. The rest is implementation
+detail.
+
+```ts
+// modules/(bookings)/bookings/index.ts — public API
+export {
+  useBookingDetail,
+  useBookingsList,
+  canCancel,
+  canConfirm,
+  canPay,
+} from "./entity";
+export { BOOKING_QUERY_KEYS } from "./entity";
+export { CreateBookingForm } from "./features/create-booking";
+export { CancelBookingButton } from "./features/cancel-booking";
+export { ConfirmBookingButton } from "./features/confirm-booking";
+export { CompleteBookingButton } from "./features/complete-booking";
+export { BookingListTable } from "./features/booking-list";
+export { BookingDetailsCard } from "./features/booking-details-card";
+
+// NOT exported: individual mutations, schemas, internal hooks, dialog components
+export type { Booking, BookingListItem } from "./entity";
+```
+
+Consumers import **only** what's in `index.ts`. Deep imports are forbidden.
+
+### Cross-module dependencies
+
+When `modules/payments` needs to invalidate bookings cache:
+
+```ts
+// modules/(bookings)/payments/features/pay-booking/pay-booking.mutation.ts
+import { BOOKING_QUERY_KEYS } from "#src/modules/(bookings)/bookings"; // ✅ public API
+// NOT: import from "#src/modules/(bookings)/bookings/entity/booking.queries";  ❌
+```
+
+## Feature components self-contain visibility
+
+Features decide when they should render. Pages don't check predicates.
+
+```vue
+<!-- features/cancel-booking/cancel-booking-button.vue -->
+<script setup lang="ts">
+import { canCancel } from "#src/modules/(bookings)/bookings";
+import type { Booking } from "#src/modules/(bookings)/bookings";
+import { useCancelBooking } from "./use-cancel-booking";
+// ...
+
+const props = defineProps<{ booking: Booking }>();
+const { isOpen, dialogRef, reason, confirm, isPending } = useCancelBooking(
+  () => props.booking.id,
+);
+</script>
+
+<template>
+  <template v-if="canCancel(booking)">
+    <Button @click="isOpen = true">Cancel booking</Button>
+    <CancelBookingDialog
+      v-if="isOpen"
+      ref="dialogRef"
+      v-model:reason="reason"
+      :is-pending="isPending"
+      @confirm="confirm"
+      @close="isOpen = false"
+    />
+  </template>
+</template>
+```
+
+## Serialization boundary
+
+Mutations take **form values**. They serialize internally before calling SDK.
+
+```ts
+// features/create-booking/create-booking.mutation.ts
+import { useMutation, useQueryClient } from "@tanstack/vue-query";
+import { postV1Bookings } from "#src/common/api/sdk";
+import { BOOKING_QUERY_KEYS } from "../../entity/booking.queries";
+import { stripEmpty } from "#src/common/utils/objects/strip-empty";
+import type { CreateBookingFormValues } from "./create-booking.schema";
+import type { UUID } from "#src/types";
+
+export function useCreateBookingMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (vars: {
+      serviceId: UUID;
+      values: CreateBookingFormValues;
+    }) => {
+      //                                ^^^^^^^ form values, not API body
+      const body = {
+        serviceId: vars.serviceId,
+        startAt: new Date(vars.values.startAt).toISOString(),
+      };
+      //                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ serialization here
+      const { data } = await postV1Bookings({ body, throwOnError: true });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: BOOKING_QUERY_KEYS.lists() });
+    },
+  });
+}
+```
+
+Pages never call `stripEmpty()`, `toISOString()`, or assemble request bodies.
+
+## When to create a module
+
+Create a module **only** when there's a backend entity (an API resource with
+types and endpoints). Do not create modules for:
+
+- UI patterns without data (use `common/components/`)
+- One-off utilities (use `common/utils/`)
+- Page-specific logic (keep on the page)
+
+## When to extract a feature from a page
+
+Start with code on the page. Extract when one of these is true:
+
+- Same logic appears on **3+ pages** (Rule of Three)
+- A user action has meaningful UI + mutation + side effects (worth
+  encapsulating)
+- A UI block composes multiple pieces and could be reused
+
+Tiny pages (about, privacy) stay as plain `.vue` files with `.components/`. No
+module, no feature.
+
+## The `common/` layer
+
+### What it contains
+
+- `common/components/` — UI primitives and reusable presentational components
+  (Button, Input, FormField, DataField, BackLink, StatusBadge, PageHeader,
+  CursorPagination, Pagination, Card, etc.)
+- `common/composables/` — generic composables (`useRouteId`, `useQueryParam`,
+  `useFocusTrapOnOpen`)
+- `common/utils/` — pure helpers (`runWithToast`, `stripEmpty`,
+  `formatCurrency`, `formatDate`, `formatApiError`)
+- `common/validation/` — shared TypeBox primitives (`EmailSchema`,
+  `PasswordSchema`, `RequiredStringSchema`), `toTypeBoxResolver`
+- `common/router/` — `useAppRouter` with typed routes
+- `common/types/` — `UUID`, `PaginationParams`, `UpdateMutationVars<T>`
+- `common/lib/` — shadcn `cn()` utility
+- `common/api/` — generated SDK + runtime config
+
+### What `common/` must never contain
+
+- Business entity types (they belong in `modules/<entity>/entity/types.ts`)
+- Business predicates (`canCancel`, `isVerified` — belong in `entity/domain.ts`)
+- Feature-specific logic
+- Module-specific queries or mutations
+
+## Global layout components
+
+`AppHeader`, `AppSidebar`, `Breadcrumbs` go in `common/components/layouts/` or
+in the Nuxt layout file itself (`app/layouts/default.vue`). They are not a
+module — they are shared app chrome.
+
+## No `widgets/` layer — where composites live
+
+FSD has a `widgets/` layer for UI composites. We deliberately do not have one
+because Nuxt layouts already serve as the composition point. When a UI element
+composes multiple features, it goes in one of four places depending on shape.
+
+### Decision tree
+
+```text
+Is this UI a composite (combines ≥2 features)?
+├── NO (one feature) → lives inside that feature's module
+│
+└── YES
+    │
+    Is it app chrome (header / footer / sidebar / nav)?
+    ├── YES → app/layouts/default.vue
+    │         or common/components/layouts/app-header.vue (if shared across layouts)
+    │         or app/layouts/.components/app-header.vue (if layout-specific)
+    │
+    └── NO
+        │
+        Is it a global overlay rendered once at the root?
+        │ (toast container, command palette, cookie banner, chat widget)
+        ├── YES → mount in app.vue (or in layout once)
+        │         component itself lives in the "primary" module as a feature
+        │         e.g. modules/(search)/search/features/command-palette/
+        │
+        └── NO
+            │
+            How many pages use it?
+            ├── 1 page       → pages/xxx/.components/<name>.vue
+            ├── 2–3 pages    → page-level (still .components, consider extraction)
+            └── 4+ pages     → feature-composite in "primary" module
+                               e.g. modules/(marketplace)/products/features/
+                                    related-products/
+```
+
+### "Primary" module for a composite
+
+A composite belongs to the module of the dominant business entity it operates
+on. Examples:
+
+| Composite              | Combines                        | Primary module                           |
+| ---------------------- | ------------------------------- | ---------------------------------------- |
+| `<RelatedProducts>`    | products + reviews + cart       | `modules/(marketplace)/products/`        |
+| `<OrderSummaryCard>`   | order + payments + user         | `modules/(bookings)/orders/`             |
+| `<ChatWidget>`         | chat + presence + support       | `modules/(support)/chat/`                |
+| `<CommandPalette>`     | search + navigation + shortcuts | `modules/(search)/search/`               |
+| `<NotificationsPanel>` | notifications + user            | `modules/(notifications)/notifications/` |
+
+If no primary module is obvious, the composite probably belongs in
+`pages/<page>/.components/`, not in a module.
+
+### Examples
+
+**Header with many features** (log-out, user menu, search, cart, notifications):
+layout composes feature components, layout owns no logic.
+
+```vue
+<!-- app/layouts/default.vue -->
+<template>
+  <header>
+    <AppLogo />
+    <GlobalSearch />
+    <!-- from modules/(search)/search -->
+    <NotificationsBell />
+    <!-- from modules/(notifications)/... -->
+    <CartBadge />
+    <!-- from modules/(commerce)/cart -->
+    <UserMenu />
+    <!-- from modules/(users)/profiles -->
+    <LogOutButton />
+    <!-- from modules/(users)/authentication -->
+  </header>
+  <main><slot /></main>
+</template>
+```
+
+**Command palette** (global overlay): feature in the `search` module, mounted
+once at app root.
 
 ```
-useHttpClient        (common layer — ofetch wrapper, auth interceptors)
-      |
-useXxxApi            (module layer — pure HTTP calls, returns { list, getById, ... })
-      |
-useXxx               (module layer — wraps api with useQuery / useMutation + queryKeys)
-      |
-useXxxStore          (Pinia — THE composer: state + business logic + orchestration)
-      |
-UI components        (consume store directly, or receive data via props)
+modules/(search)/search/features/command-palette/
+├── command-palette.vue
+├── use-command-palette.ts             # keyboard shortcut + open/close state
+└── index.ts
 ```
 
-### Layer 1: `useHttpClient`
+```vue
+<!-- app.vue -->
+<NuxtLayout><NuxtPage /></NuxtLayout>
+<CommandPalette />
+```
 
-Singleton ofetch instance. Lives in `common/api/use-http-client.ts`. Handles
-baseURL, auth token, interceptors, retries, timeout. Returns a typed `$Fetch`.
+**Related products** (composite, 4+ pages use it): feature-composite in the
+products module.
 
-### Layer 2: `useXxxApi`
+```
+modules/(marketplace)/products/features/related-products/
+├── related-products.vue               # composes ProductCard + AddToCartButton
+├── use-related-products.ts
+└── index.ts
+```
 
-Composable returning a plain object with typed API methods. No reactivity, no
-state. Each method is a thin wrapper over `http<T>(url, options)`. Response
-types come from the OpenAPI-generated schema.
+### Forbidden
 
-### Layer 3: `useXxx`
+- ❌ Creating a chrome module (`modules/(chrome)/header/`) — chrome has no
+  backend entity, it does not fit the module definition.
+- ❌ Creating a `widgets/` layer — duplicates Nuxt layouts + pages.
+- ❌ Putting business logic (mutations, predicates, API calls) inside a layout
+  file — layouts only compose. Logic stays in features.
 
-Composable wrapping the api layer with TanStack Query. Returns an object
-`{ list, byId, cancel, ... }` where each method creates a `useQuery` or
-`useMutation`. Define `queryKeys` as a hierarchical object at the top of the
-file for consistent invalidation.
+## File naming
 
-### Layer 4: `useXxxStore` (Pinia setup store)
+| File           | Pattern                        | Example                                               |
+| -------------- | ------------------------------ | ----------------------------------------------------- |
+| Vue components | kebab-case                     | `cancel-booking-button.vue`                           |
+| TypeScript     | kebab-case with purpose suffix | `use-cancel-booking.ts`, `cancel-booking.mutation.ts` |
+| Types          | `<name>.types.ts`              | `booking.types.ts`                                    |
+| Schemas        | `<name>.schema.ts`             | `create-booking.schema.ts`                            |
+| Domain         | `<name>.domain.ts`             | `booking.domain.ts`                                   |
+| Queries        | `<name>.queries.ts`            | `booking.queries.ts`                                  |
+| Mutations      | `<action>.mutation.ts`         | `cancel-booking.mutation.ts`                          |
 
-**This is where all business logic lives.** The store:
+## Component naming
 
-- Calls `useXxx()` internally to get queries and mutations
-- Holds UI state (filters, selection, pagination)
-- Exposes computed data (`orders`, `total`, `isLoading`) from query results
-- Contains business predicates as methods (`canCancel`, `canRefund`, `isFinal`)
-- Contains display helpers as methods (`getStatusLabel`, `getItemsCount`)
-- Contains computed filtered lists (`cancellableOrders`, `refundableOrders`)
-- Contains action methods (`cancelOrder`, `setStatusFilter`, `resetFilters`)
+| Kind                 | Pattern                                 | Example                                                              |
+| -------------------- | --------------------------------------- | -------------------------------------------------------------------- |
+| Feature UI           | `<Action><Entity><Suffix>` (PascalCase) | `<CancelBookingButton>`, `<CreateBookingForm>`, `<BookingListTable>` |
+| Entity-bound UI card | `<Entity><Suffix>`                      | `<BookingDetailsCard>`, `<UserProfileCard>`                          |
+| Generic UI           | plain noun                              | `<Button>`, `<FormField>`, `<DataField>`                             |
 
-**No separate helpers file.** All predicates, formatters, and business rules are
-methods on the store.
+## Decision tree: where does this code go?
 
-## API Types from OpenAPI
+```text
+Is it a backend entity (API resource)?
+├── YES → modules/(group)/<entity>/entity/
+│
+└── NO
+    │
+    Is it a user action (mutation + UI)?
+    ├── YES → modules/(group)/<entity>/features/<action>/
+    │
+    └── NO
+        │
+        Is it app chrome (header/footer/sidebar)?
+        ├── YES → app/layouts/ or common/components/layouts/
+        │         (see "No widgets/ layer" section)
+        │
+        └── NO
+            │
+            Is it a global overlay (rendered once at root)?
+            │ (toast container, command palette, cookie banner)
+            ├── YES → feature in primary module,
+            │         mounted in app.vue
+            │
+            └── NO
+                │
+                Is it a composite of ≥2 features used on 4+ pages?
+                ├── YES → feature-composite in primary module
+                │
+                └── NO
+                    │
+                    Is it a reusable UI block with business data?
+                    ├── YES → modules/(group)/<entity>/features/<name>/
+                    │
+                    └── NO
+                        │
+                        Is it a generic UI primitive?
+                        ├── YES → common/components/
+                        │
+                        └── NO
+                            │
+                            Is it a pure utility (format, strip, etc.)?
+                            ├── YES → common/utils/<domain>/
+                            │
+                            └── NO
+                                │
+                                Is it specific to one page?
+                                └── YES → pages/<page>/.components/
+```
 
-**DTO types are generated, never hand-written.**
+## Anti-patterns (forbidden)
 
-- Backend publishes `openapi.json` at a known URL
-- Script `pnpm gen:api` runs `openapi-typescript` and writes
-  `src/common/api/generated/api-schema.ts`
-- Generated file is committed to Git for diff visibility on backend changes
-- CI runs `pnpm gen:api && git diff --exit-code` to catch out-of-sync types
-- Module's `<name>.types.ts` re-exports from generated schema under clean domain
-  names
+- Creating a module for a feature (module = entity, not feature)
+- Nested modules (`modules/a/sub/b/` — never)
+- Page importing `useMutation`, `useQuery`, or SDK functions directly
+- Page importing `@sinclair/typebox`
+- Page constructing API body (`stripEmpty`, `toISOString`, body assembly)
+- Page calling domain predicates (`canCancel` — feature component decides)
+- `try/catch` + manual toast on pages (use `runWithToast` in hooks)
+- `<NuxtLink><Button>` nesting (use `<Button as-child>`)
+- Deep imports across modules (always via `index.ts`)
+- Entity importing from features
+- Features importing each other in the same module
+- `common/` containing business domain types or predicates
+- `export *` from any `index.ts`
+- Manual SDK edits (it's generated — run `pnpm gen:sdk`)
+- Creating a `widgets/` layer — use layouts + feature composites instead
+- Creating a chrome module (`modules/(chrome)/header/`) — chrome is not an
+  entity
+- Business logic (mutations, predicates, API) inside a layout file
 
-## TypeBox: Scope and Rules
+## Session gate — before declaring done
 
-TypeBox is used **only where OpenAPI is not the source of truth**:
-
-1. **Forms** — login, register, edit profile, cancellation reason
-2. **Untrusted inputs** — URL query params, localStorage, postMessage
-3. **Feature flags / remote config**
-4. **Runtime type guards**
-
-**Never validate your own API responses with TypeBox.** Trust the generated
-types.
-
-## Naming Conventions
-
-**Files (all kebab-case):**
-
-- Composables: `use-order.ts`, `use-http-client.ts`
-- API: `use-order-api.ts`
-- Stores: `order.store.ts`
-- Types: `order.types.ts`
-- Schemas: `order.schemas.ts`
-- Vue components: `ui-order-row.vue`, `ui-button.vue`
-
-**Code:**
-
-- Composables: `useOrder()`, `useHttpClient()`
-- Stores: `useOrderStore()`
-- Vue components in templates: `<UiOrderRow>`, `<UiButton>` — PascalCase with
-  `Ui` prefix
-- Types/interfaces: `Order`, `OrderListFilters`
-- Enums: `OrderStatus` — `as const` object, never TypeScript `enum`
-
-## Type Rules
-
-- Always use `as const` objects for enums, never TypeScript `enum`
-- All data types use `readonly` by default for DTO types
-- Exhaustive switch with `never` check
-
-## Import Rules
-
-- **Single path alias:** `#src` pointing to `./src`
-- **Always import modules through their `index.ts`**
-- **`common` sub-paths are imported directly** (no root common index)
-- **`common` never imports from `modules`**
-- **`pages` import from `modules` and `common`**
-- **Modules can import from other modules** only through their public `index.ts`
-- **Disable Nuxt auto-imports**
-
-## Index.ts Rules
-
-**Always explicit named exports. Never `export *`.** Group exports with section
-comments.
-
-**Never export module internals.** API composables, private helpers, internal
-schemas stay unexported.
-
-## What NOT to Do
-
-- No classes for entities — use `interface` + store methods
-- No separate `helpers.ts` files — business logic goes inside the store
-- No repository pattern, no use case layer, no domain services
-- No `export *` anywhere in any `index.ts`
-- No `enum` keyword — use `as const` objects
-- No `any` type — use `unknown` if truly needed
-- No storing server data in Pinia state — TanStack Query cache is the source of
-  truth
-- No composables reading Pinia stores — stores sit at the top of the chain
-- No hand-written DTO types — generate from OpenAPI
-- No validation of own API responses with TypeBox
-- No root `common/index.ts`
-- No group-level `index.ts` for `(users)`, `(orders)` etc.
-- No empty folders "for future use"
+1. `npx nuxi typecheck` — zero errors in business code
+2. No business logic on pages (no mutations, predicates, schemas, body assembly)
+3. No direct SDK imports from pages
+4. No TypeBox imports on pages
+5. All cross-module imports go through `index.ts`
+6. Feature components self-check visibility (no `v-if="canX(thing)"` on pages)
+7. Append a line to `.claude/REFLECTIONS.md` if anything surprised you

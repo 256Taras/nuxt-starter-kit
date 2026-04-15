@@ -1,0 +1,23 @@
+import { useMutation, useQueryClient } from "@tanstack/vue-query";
+// Use the generated TanStack Query helper from SDK — don't hand-write mutationFn.
+// TODO: pick the correct helper for this action, e.g.:
+// import { patchV1{{pascalCase module}}ById{{pascalCase action}}Mutation } from "#src/common/api/sdk-queries";
+// TODO: import shared query keys from entity:
+// import { {{upperSnakeCase module}}_QUERY_KEYS } from "../../entity";
+import type { UUID } from "#src/types";
+
+export function use{{pascalCase action}}{{pascalCase entity}}Mutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    // ...patchV1{{pascalCase module}}ById{{pascalCase action}}Mutation(),
+    mutationFn: async () => {
+      throw new Error("Replace with generated SDK mutation options");
+    },
+    onSuccess: (_data, _vars) => {
+      // TODO: invalidate caches — e.g.:
+      // queryClient.invalidateQueries({ queryKey: {{upperSnakeCase module}}_QUERY_KEYS.lists() });
+      // queryClient.invalidateQueries({ queryKey: {{upperSnakeCase module}}_QUERY_KEYS.detail(_vars.path.id as UUID) });
+    },
+  });
+}

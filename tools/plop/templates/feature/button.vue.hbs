@@ -1,0 +1,28 @@
+<script setup lang="ts">
+// TODO: import the entity type and visibility predicate, e.g.:
+// import type { {{pascalCase entity}} } from "../../entity";
+// import { can{{pascalCase action}} } from "../../entity";
+import { computed } from "vue";
+import { use{{pascalCase action}}{{pascalCase entity}} } from "./use-{{kebabCase action}}-{{kebabCase entity}}";
+import { Button } from "#src/common/components/atoms/button";
+
+const props = defineProps<{
+  // {{camelCase entity}}: {{pascalCase entity}};
+  id: string;
+}>();
+
+const { trigger, isPending } = use{{pascalCase action}}{{pascalCase entity}}(() => props.id);
+
+const label = computed(() => (isPending.value ? "{{pascalCase action}}ing..." : "{{pascalCase action}} {{entity}}"));
+</script>
+
+<template>
+  <!-- Wrap in v-if="can{{pascalCase action}}({{camelCase entity}})" once the predicate exists -->
+  <Button
+    variant="outline"
+    :disabled="isPending"
+    @click="trigger"
+  >
+    <span v-text="label" />
+  </Button>
+</template>

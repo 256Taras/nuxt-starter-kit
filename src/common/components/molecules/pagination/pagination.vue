@@ -41,11 +41,13 @@ const pages = computed(() => {
 <template>
   <nav
     v-if="totalPages > 1"
+    aria-label="Pagination"
     class="flex items-center gap-1"
   >
     <Button
       variant="outline"
       size="icon"
+      aria-label="Previous page"
       :disabled="!hasPreviousPage"
       @click="emit('update:page', page - 1)"
     >
@@ -64,6 +66,8 @@ const pages = computed(() => {
       <Button
         v-else
         :variant="p === page ? 'default' : 'outline'"
+        :aria-label="`Go to page ${p}`"
+        :aria-current="p === page ? 'page' : undefined"
         size="sm"
         @click="emit('update:page', p)"
       >
@@ -74,6 +78,7 @@ const pages = computed(() => {
     <Button
       variant="outline"
       size="icon"
+      aria-label="Next page"
       :disabled="!hasNextPage"
       @click="emit('update:page', page + 1)"
     >

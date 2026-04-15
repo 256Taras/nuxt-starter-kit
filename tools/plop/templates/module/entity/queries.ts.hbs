@@ -1,0 +1,33 @@
+// Shared queries and query keys for this entity.
+// Feature-specific mutations live in features/<action>/<action>.mutation.ts.
+//
+// import { computed } from "vue";
+// import type { Ref } from "vue";
+// import { useQuery } from "@tanstack/vue-query";
+// import {
+//   getV1{{pascalCase name}}Options,
+//   getV1{{pascalCase name}}ByIdOptions,
+//   getV1{{pascalCase name}}QueryKey,
+//   getV1{{pascalCase name}}ByIdQueryKey,
+// } from "#src/common/api/sdk-queries";
+// import type { PaginationParams, UUID } from "#src/types";
+//
+// export const {{upperSnakeCase (singular name)}}_QUERY_KEYS = {
+//   lists: () => getV1{{pascalCase name}}QueryKey({}),
+//   detail: (id: UUID) => getV1{{pascalCase name}}ByIdQueryKey({ path: { id } }),
+// };
+//
+// export function use{{pascalCase name}}ListQuery(params: Ref<PaginationParams>) {
+//   return useQuery(computed(() => getV1{{pascalCase name}}Options({ query: params.value })));
+// }
+//
+// export function use{{pascalCase (singular name)}}DetailQuery(id: Ref<UUID>) {
+//   return useQuery(
+//     computed(() => ({
+//       ...getV1{{pascalCase name}}ByIdOptions({ path: { id: id.value } }),
+//       enabled: !!id.value,
+//     })),
+//   );
+// }
+
+export {};

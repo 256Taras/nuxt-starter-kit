@@ -1,0 +1,23 @@
+# Generated files
+src/common/api/sdk/**
+src/common/api/generated/**
+
+# Lockfiles
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Build output
+.output/**
+.nuxt/**
+dist/**
+
+# Playwright / Storybook artifacts
+.playwright-mcp/**
+storybook-static/**
+
+# Node
+node_modules/**
+
+# Claude auto-generated state
+.claude/SESSION_STATE.md

@@ -1,52 +1,53 @@
 <script setup lang="ts">
-import { storeToRefs } from "pinia";
-import { definePageMeta } from "#imports";
-import { useProfilesStore, useUsersListQuery } from "#src/modules/(users)/profiles";
-import { useAppRouter } from "#src/common/router/app-router";
+import { ref } from "vue";
+import { definePageMeta, useSeoMeta } from "#imports";
+import { useUsersListQuery, getFullName, getRoleLabel, UserRoleColor } from "#src/modules/(users)/profiles";
+import type { PaginationParams } from "#src/types";
+import { useAppRouter } from "#src/common/routing/app-router";
 import { Button } from "#src/common/components/atoms/button";
+import { StatusBadge } from "#src/common/components/atoms/status-badge";
+import { PageHeader } from "#src/common/components/molecules/page-header";
 import { Pagination } from "#src/common/components/molecules/pagination";
+import { SkeletonList } from "#src/common/components/molecules/skeleton-list";
+import { ErrorState } from "#src/common/components/molecules/error-state";
 import { Plus, Eye, Pencil } from "lucide-vue-next";
 
 definePageMeta({ layout: "default" });
+useSeoMeta({ title: "Users" });
 
-const store = useProfilesStore();
-const { paginationParams } = storeToRefs(store);
-const { getFullName, getRoleLabel } = store;
+const paginationParams = ref<PaginationParams>({ page: 1, limit: 10 });
 const { routes } = useAppRouter();
 
-const { data: response, isLoading, isError, error } = useUsersListQuery(paginationParams);
+const { data: response, items: users, isLoading, isError, error, refetch } = useUsersListQuery(paginationParams);
+
+function setPage(page: number) {
+  paginationParams.value = { ...paginationParams.value, page };
+}
 </script>
 
 <template>
   <div>
-    <div class="flex items-center justify-between mb-6">
-      <h1 class="text-2xl font-bold text-foreground">Users</h1>
-      <NuxtLink :to="routes.users.create()">
-        <Button>
-          <Plus
-            :size="16"
-            class="mr-2"
-          />
-          Create user
+    <PageHeader title="Users">
+      <template #actions>
+        <Button as-child>
+          <NuxtLink :to="routes.users.create()">
+            <Plus
+              :size="16"
+              class="mr-2"
+            />
+            Create user
+          </NuxtLink>
         </Button>
-      </NuxtLink>
-    </div>
+      </template>
+    </PageHeader>
 
-    <div
-      v-if="isLoading"
-      class="text-muted-foreground"
-      aria-live="polite"
-    >
-      Loading users...
-    </div>
+    <SkeletonList v-if="isLoading" />
 
-    <div
+    <ErrorState
       v-else-if="isError"
-      class="text-destructive"
-      role="alert"
-    >
-      {{ error?.message ?? "Failed to load users" }}
-    </div>
+      :message="error?.userMessage"
+      @retry="refetch()"
+    />
 
     <template v-else-if="response">
       <div class="rounded-lg border bg-card shadow-sm overflow-hidden">
@@ -64,19 +65,16 @@ const { data: response, isLoading, isError, error } = useUsersListQuery(paginati
           </thead>
           <tbody>
             <tr
-              v-for="user in response.data"
+              v-for="user in users"
               :key="user.id"
               class="border-b last:border-0 hover:bg-muted/30 transition-colors"
             >
               <td class="px-4 py-3 font-medium text-card-foreground">{{ getFullName(user) }}</td>
               <td class="px-4 py-3 text-muted-foreground">{{ user.email }}</td>
               <td class="px-4 py-3">
-                <span
-                  class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
-                  :class="user.role === 'ADMIN' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'"
-                >
+                <StatusBadge :class="UserRoleColor[user.role]">
                   {{ getRoleLabel(user.role) }}
-                </span>
+                </StatusBadge>
               </td>
               <td class="px-4 py-3 text-right">
                 <div class="flex items-center justify-end gap-2">
@@ -114,10 +112,10 @@ const { data: response, isLoading, isError, error } = useUsersListQuery(paginati
       <div class="mt-4 flex justify-center">
         <Pagination
           :page="response.meta.page"
-          :total-pages="response.meta.totalPages"
+          :total-pages="response.meta.pageCount"
           :has-next-page="response.meta.hasNextPage"
           :has-previous-page="response.meta.hasPreviousPage"
-          @update:page="store.setPage"
+          @update:page="setPage"
         />
       </div>
     </template>

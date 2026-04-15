@@ -13,7 +13,7 @@ export default defineNuxtConfig({
     "#src": fileURLToPath(new URL("./src", import.meta.url)),
   },
 
-  modules: ["@pinia/nuxt", "@nuxt/eslint", "@vueuse/nuxt", "@vee-validate/nuxt", "nuxt-typed-router", "dayjs-nuxt"],
+  modules: ["@pinia/nuxt", "@nuxt/eslint", "@vueuse/nuxt", "@vee-validate/nuxt", "dayjs-nuxt"],
 
   dir: {
     assets: "app/assets",
@@ -51,6 +51,8 @@ export default defineNuxtConfig({
   // ─────────────────────────────────────────────────────────────────
   // Dev
   // ─────────────────────────────────────────────────────────────────
+  ssr: true,
+
   devtools: { enabled: isDev },
 
   devServer: {
@@ -83,6 +85,12 @@ export default defineNuxtConfig({
   // ─────────────────────────────────────────────────────────────────
   vite: {
     plugins: [tailwindcss()],
+
+    server: {
+      watch: {
+        usePolling: false,
+      },
+    },
 
     define: {
       __VUE_PROD_DEVTOOLS__: false,
@@ -160,7 +168,7 @@ export default defineNuxtConfig({
   // ─────────────────────────────────────────────────────────────────
   runtimeConfig: {
     public: {
-      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || "http://localhost:3100",
+      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || "http://localhost:8000",
       appName: process.env.NUXT_PUBLIC_APP_NAME || "Nuxt Starter Kit",
       appUrl: process.env.NUXT_PUBLIC_APP_URL || "http://localhost:3000",
       appEnv: process.env.NODE_ENV || "development",

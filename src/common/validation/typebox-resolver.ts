@@ -2,13 +2,14 @@ import { TypeCompiler } from "@sinclair/typebox/compiler";
 import type { TObject, TProperties } from "@sinclair/typebox";
 import type { TypeCheck } from "@sinclair/typebox/compiler";
 
-const compiledCache = new WeakMap<TObject, TypeCheck<TObject>>();
+const compiledCache = new WeakMap<TObject<TProperties>, TypeCheck<TObject<TProperties>>>();
 
 function getCompiled<T extends TProperties>(schema: TObject<T>): TypeCheck<TObject<T>> {
-  let compiled = compiledCache.get(schema);
+  const key = schema as TObject<TProperties>;
+  let compiled = compiledCache.get(key);
   if (!compiled) {
-    compiled = TypeCompiler.Compile(schema);
-    compiledCache.set(schema, compiled);
+    compiled = TypeCompiler.Compile(key);
+    compiledCache.set(key, compiled);
   }
   return compiled as TypeCheck<TObject<T>>;
 }

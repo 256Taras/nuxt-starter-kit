@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import { definePageMeta } from "#imports";
+import { PageHeader } from "#src/common/components/molecules/page-header";
+
+definePageMeta({ layout: "{{layout}}" });
+</script>
+
+<template>
+  <div>
+    <PageHeader title="{{title}}" />
+    <!-- TODO: compose features from modules + shared UI from common -->
+  </div>
+</template>

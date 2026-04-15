@@ -39,3 +39,10 @@ storybook-static
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
+
+# Test outputs
+coverage/
+playwright-report/
+test-results/
+.playwright-mcp/
+

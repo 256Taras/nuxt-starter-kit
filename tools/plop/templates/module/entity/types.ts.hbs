@@ -1,0 +1,16 @@
+// Type aliases over generated SDK types. Never hand-write DTOs.
+//
+// import type {
+//   GetV1{{pascalCase name}}ByIdResponse,
+//   GetV1{{pascalCase name}}Response,
+//   PostV1{{pascalCase name}}Data,
+//   PatchV1{{pascalCase name}}ByIdData,
+// } from "#src/common/api/sdk";
+//
+// export type {{pascalCase (singular name)}} = GetV1{{pascalCase name}}ByIdResponse;
+// export type {{pascalCase (singular name)}}ListResponse = GetV1{{pascalCase name}}Response;
+// export type {{pascalCase (singular name)}}ListItem = Required<{{pascalCase (singular name)}}ListResponse["data"][number]>;
+// export type {{pascalCase (singular name)}}CreateInput = PostV1{{pascalCase name}}Data["body"];
+// export type {{pascalCase (singular name)}}UpdateInput = NonNullable<PatchV1{{pascalCase name}}ByIdData["body"]>;
+
+export {};
