@@ -12,3 +12,5 @@ export type {
   ApiErrorResponse,
   UpdateMutationVars,
 } from "./api.types";
+
+export { DEFAULT_PAGE_SIZE } from "./api.types";

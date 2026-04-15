@@ -1,3 +1,5 @@
+const MAX_RATING = 5;
+
 export function formatRating(rating: number): string {
-  return `${rating}/5`;
+  return `${rating}/${MAX_RATING}`;
 }

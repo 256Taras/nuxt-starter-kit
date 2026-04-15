@@ -21,7 +21,9 @@ watch(providerIdQuery, (next) => {
   if (next) selectedProviderId.value = next;
 });
 
-const providersParams = ref<PaginationParams>({ page: 1, limit: 100 });
+const SELECTION_LIST_LIMIT = 100;
+
+const providersParams = ref<PaginationParams>({ page: 1, limit: SELECTION_LIST_LIMIT });
 const { items: providers, isLoading: providersLoading } = useProvidersListQuery(providersParams);
 
 const hasProvider = computed(() => !!selectedProviderId.value);

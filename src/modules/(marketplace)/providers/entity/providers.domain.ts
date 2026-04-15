@@ -1,5 +1,10 @@
 import type { Provider } from "./providers.types";
 
+const RATING_EXCELLENT = 4.5;
+const RATING_GOOD = 3.5;
+const RATING_AVERAGE = 2.5;
+const RATING_BELOW_AVERAGE = 1.5;
+
 export function isVerified(provider: Provider): boolean {
   return provider.isVerified;
 }
@@ -7,9 +12,9 @@ export function isVerified(provider: Provider): boolean {
 export function getRatingLabel(rating: string): string {
   const value = parseFloat(rating);
 
-  if (value >= 4.5) return "Excellent";
-  if (value >= 3.5) return "Good";
-  if (value >= 2.5) return "Average";
-  if (value >= 1.5) return "Below average";
+  if (value >= RATING_EXCELLENT) return "Excellent";
+  if (value >= RATING_GOOD) return "Good";
+  if (value >= RATING_AVERAGE) return "Average";
+  if (value >= RATING_BELOW_AVERAGE) return "Below average";
   return "Poor";
 }

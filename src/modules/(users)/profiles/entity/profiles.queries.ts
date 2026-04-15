@@ -15,7 +15,7 @@ import type { PaginationParams, UUID } from "#src/types";
 export const USER_QUERY_KEYS = {
   profile: () => getV1UsersProfileQueryKey({}),
   lists: () => getV1UsersQueryKey({}),
-  detail: (id: UUID) => getV1UsersByIdQueryKey({ path: { id } }),
+  detail: (id: string) => getV1UsersByIdQueryKey({ path: { id } }),
 };
 
 export function useProfileQuery() {

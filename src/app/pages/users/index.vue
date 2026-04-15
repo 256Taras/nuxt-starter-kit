@@ -3,6 +3,7 @@ import { ref } from "vue";
 import { definePageMeta, useSeoMeta } from "#imports";
 import { useUsersListQuery, getFullName, getRoleLabel, UserRoleColor } from "#src/modules/(users)/profiles";
 import type { PaginationParams } from "#src/types";
+import { DEFAULT_PAGE_SIZE } from "#src/types";
 import { useAppRouter } from "#src/common/routing/app-router";
 import { Button } from "#src/common/components/atoms/button";
 import { StatusBadge } from "#src/common/components/atoms/status-badge";
@@ -15,7 +16,7 @@ import { Plus, Eye, Pencil } from "lucide-vue-next";
 definePageMeta({ layout: "default" });
 useSeoMeta({ title: "Users" });
 
-const paginationParams = ref<PaginationParams>({ page: 1, limit: 10 });
+const paginationParams = ref<PaginationParams>({ page: 1, limit: DEFAULT_PAGE_SIZE });
 const { routes } = useAppRouter();
 
 const { data: response, items: users, isLoading, isError, error, refetch } = useUsersListQuery(paginationParams);

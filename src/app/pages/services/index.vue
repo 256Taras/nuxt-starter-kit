@@ -9,6 +9,7 @@ import {
   ServiceStatusColor,
 } from "#src/modules/(marketplace)/services";
 import type { PaginationParams } from "#src/types";
+import { DEFAULT_PAGE_SIZE } from "#src/types";
 import { useAppRouter } from "#src/common/routing/app-router";
 import { Button } from "#src/common/components/atoms/button";
 import { StatusBadge } from "#src/common/components/atoms/status-badge";
@@ -22,7 +23,7 @@ import { Eye, Plus } from "lucide-vue-next";
 definePageMeta({ layout: "default" });
 useSeoMeta({ title: "Services" });
 
-const paginationParams = ref<PaginationParams>({ page: 1, limit: 10 });
+const paginationParams = ref<PaginationParams>({ page: 1, limit: DEFAULT_PAGE_SIZE });
 const { routes } = useAppRouter();
 
 const { data: response, items: services, isLoading, isError, error, refetch } = useServicesListQuery(paginationParams);

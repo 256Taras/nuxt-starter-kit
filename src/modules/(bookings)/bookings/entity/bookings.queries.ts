@@ -15,7 +15,7 @@ export type BookingListParams = NonNullable<GetV1BookingsData["query"]>;
 
 export const BOOKING_QUERY_KEYS = {
   lists: () => getV1BookingsQueryKey({}),
-  detail: (id: UUID) => getV1BookingsByIdQueryKey({ path: { id } }),
+  detail: (id: string) => getV1BookingsByIdQueryKey({ path: { id } }),
 };
 
 export function useBookingsListQuery(params: Ref<BookingListParams>) {
