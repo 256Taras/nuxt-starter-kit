@@ -22,7 +22,9 @@ watch(serviceIdQuery, (next) => {
   if (next) selectedServiceId.value = next;
 });
 
-const servicesParams = ref<PaginationParams>({ page: 1, limit: 100 });
+const SELECTION_LIST_LIMIT = 100;
+
+const servicesParams = ref<PaginationParams>({ page: 1, limit: SELECTION_LIST_LIMIT });
 const { items: services, isLoading: servicesLoading } = useServicesListQuery(servicesParams);
 
 const hasService = computed(() => !!selectedServiceId.value);

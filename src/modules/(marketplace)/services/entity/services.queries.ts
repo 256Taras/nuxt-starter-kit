@@ -12,7 +12,7 @@ import type { PaginationParams, UUID } from "#src/types";
 
 export const SERVICE_QUERY_KEYS = {
   lists: () => getV1ServicesQueryKey({}),
-  detail: (id: UUID) => getV1ServicesByIdQueryKey({ path: { id } }),
+  detail: (id: string) => getV1ServicesByIdQueryKey({ path: { id } }),
 };
 
 export function useServicesListQuery(params: Ref<PaginationParams>) {

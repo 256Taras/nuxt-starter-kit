@@ -21,7 +21,7 @@ export function useCreateBooking(serviceId: () => UUID) {
   const onSubmit = form.handleSubmit(async (values) => {
     const ok = await runWithToast(
       mutation.mutateAsync,
-      { serviceId: serviceId(), values },
+      { body: { serviceId: serviceId(), startAt: new Date(values.startAt).toISOString() } },
       { success: "Booking created", error: "Failed to create booking" },
     );
     if (ok) await pushTo.bookings.list();

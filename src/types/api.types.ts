@@ -1,4 +1,4 @@
-export type UUID = string & { readonly __brand: "UUID" };
+export type UUID = string;
 
 export interface PaginationMeta {
   readonly page: number;
@@ -13,6 +13,8 @@ export interface PaginatedResponse<T> {
   readonly data: readonly T[];
   readonly meta: PaginationMeta;
 }
+
+export const DEFAULT_PAGE_SIZE = 10;
 
 export interface PaginationParams {
   readonly page?: number;

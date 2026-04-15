@@ -1,4 +1,5 @@
 import { formatCurrency } from "#src/common/utils/currency/format-currency";
+import { MINUTES_PER_HOUR } from "#src/common/utils/dates/time-units";
 import { ServiceStatus } from "./services.types";
 
 export const ServiceStatusLabel: Record<ServiceStatus, string> = {
@@ -18,9 +19,9 @@ export function formatPrice(price: number): string {
 }
 
 export function formatDuration(duration: number): string {
-  if (duration >= 60) {
-    const hours = Math.floor(duration / 60);
-    const mins = duration % 60;
+  if (duration >= MINUTES_PER_HOUR) {
+    const hours = Math.floor(duration / MINUTES_PER_HOUR);
+    const mins = duration % MINUTES_PER_HOUR;
     return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
   }
   return `${duration} min`;

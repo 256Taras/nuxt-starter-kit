@@ -9,6 +9,7 @@ import {
   BookingStatusColor,
 } from "#src/modules/(bookings)/bookings";
 import type { CursorPaginationParams } from "#src/types";
+import { DEFAULT_PAGE_SIZE } from "#src/types";
 import { useAppRouter } from "#src/common/routing/app-router";
 import { Button } from "#src/common/components/atoms/button";
 import { StatusBadge } from "#src/common/components/atoms/status-badge";
@@ -22,7 +23,7 @@ import { Eye, Plus } from "lucide-vue-next";
 definePageMeta({ layout: "default" });
 useSeoMeta({ title: "Bookings" });
 
-const cursorParams = ref<CursorPaginationParams>({ limit: 10 });
+const cursorParams = ref<CursorPaginationParams>({ limit: DEFAULT_PAGE_SIZE });
 const { routes, pushTo } = useAppRouter();
 
 const { data: response, items: bookings, isLoading, isError, error, refetch } = useBookingsListQuery(cursorParams);

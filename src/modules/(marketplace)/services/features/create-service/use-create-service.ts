@@ -4,8 +4,11 @@ import { ServiceFormSchema } from "../../entity";
 import type { ServiceFormValues } from "../../entity";
 import { toTypeBoxResolver } from "#src/common/validation";
 import { runWithToast } from "#src/common/utils/errors/run-with-toast";
+import { stripEmpty } from "#src/common/utils/objects/strip-empty";
 import { useAppRouter } from "#src/common/routing/app-router";
 import type { UUID } from "#src/types";
+
+const DEFAULT_SERVICE_DURATION = 60;
 
 export function useCreateService(providerId: () => UUID) {
   const mutation = useCreateServiceMutation();
@@ -13,7 +16,7 @@ export function useCreateService(providerId: () => UUID) {
 
   const form = useForm<ServiceFormValues>({
     validationSchema: toTypeBoxResolver(ServiceFormSchema),
-    initialValues: { name: "", description: "", imageUrl: "", price: 0, duration: 60 },
+    initialValues: { name: "", description: "", imageUrl: "", price: 0, duration: DEFAULT_SERVICE_DURATION },
   });
 
   const [name, nameAttrs] = form.defineField("name");
@@ -25,7 +28,15 @@ export function useCreateService(providerId: () => UUID) {
   const onSubmit = form.handleSubmit(async (values) => {
     const ok = await runWithToast(
       mutation.mutateAsync,
-      { providerId: providerId(), values },
+      {
+        path: { providerId: providerId() },
+        body: {
+          name: values.name,
+          price: values.price,
+          duration: values.duration,
+          ...stripEmpty({ description: values.description, imageUrl: values.imageUrl }),
+        },
+      },
       { success: "Service created", error: "Failed to create service" },
     );
     if (ok) await pushTo.services.list();

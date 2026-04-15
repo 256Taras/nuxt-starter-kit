@@ -1,12 +1,13 @@
 import { watch } from "vue";
+import type { Ref } from "vue";
 import { useForm } from "vee-validate";
 import { useUpdateProviderMutation } from "./update-provider.mutation";
 import { useProviderDetailQuery, ProviderFormSchema } from "../../entity";
 import type { ProviderFormValues } from "../../entity";
 import { toTypeBoxResolver } from "#src/common/validation";
 import { runWithToast } from "#src/common/utils/errors/run-with-toast";
+import { stripEmpty } from "#src/common/utils/objects/strip-empty";
 import { useAppRouter } from "#src/common/routing/app-router";
-import type { Ref } from "vue";
 import type { UUID } from "#src/types";
 
 export function useUpdateProvider(providerId: Ref<UUID>) {
@@ -40,7 +41,10 @@ export function useUpdateProvider(providerId: Ref<UUID>) {
   const onSubmit = form.handleSubmit(async (values) => {
     const ok = await runWithToast(
       mutation.mutateAsync,
-      { id: providerId.value, values },
+      {
+        path: { id: providerId.value },
+        body: { name: values.name, ...stripEmpty({ description: values.description, logoUrl: values.logoUrl }) },
+      },
       { success: "Provider updated", error: "Failed to update provider" },
     );
     if (ok) await pushTo.providers.view({ id: providerId.value });

@@ -4,11 +4,12 @@
 `feat/marketplace-modules`
 
 ## Last commit
-`no commits`
+`012a96c feat: refactor user profile types and add UUID type`
 
 ## Commits since yesterday
 ```
-
+012a96c feat: refactor user profile types and add UUID type
+2794b6e feat: add card component and related subcomponents
 ```
 
 ## Most recent reflections

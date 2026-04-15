@@ -12,7 +12,7 @@ import type { PaginationParams, UUID } from "#src/types";
 
 export const PROVIDER_QUERY_KEYS = {
   lists: () => getV1ProvidersQueryKey({}),
-  detail: (id: UUID) => getV1ProvidersByIdQueryKey({ path: { id } }),
+  detail: (id: string) => getV1ProvidersByIdQueryKey({ path: { id } }),
 };
 
 export function useProvidersListQuery(params: Ref<PaginationParams>) {

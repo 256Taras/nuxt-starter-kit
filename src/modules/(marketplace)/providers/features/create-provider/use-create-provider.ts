@@ -4,6 +4,7 @@ import { ProviderFormSchema } from "../../entity";
 import type { ProviderFormValues } from "../../entity";
 import { toTypeBoxResolver } from "#src/common/validation";
 import { runWithToast } from "#src/common/utils/errors/run-with-toast";
+import { stripEmpty } from "#src/common/utils/objects/strip-empty";
 import { useAppRouter } from "#src/common/routing/app-router";
 
 export function useCreateProvider() {
@@ -20,10 +21,11 @@ export function useCreateProvider() {
   const [logoUrl, logoUrlAttrs] = form.defineField("logoUrl");
 
   const onSubmit = form.handleSubmit(async (values) => {
-    const ok = await runWithToast(mutation.mutateAsync, values, {
-      success: "Provider created",
-      error: "Failed to create provider",
-    });
+    const ok = await runWithToast(
+      mutation.mutateAsync,
+      { body: { name: values.name, ...stripEmpty({ description: values.description, logoUrl: values.logoUrl }) } },
+      { success: "Provider created", error: "Failed to create provider" },
+    );
     if (ok) await pushTo.providers.list();
   });
 
