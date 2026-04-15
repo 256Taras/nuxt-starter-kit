@@ -1,0 +1,7 @@
+.cost-tracker
+.pre-compact-snapshot/
+.review/
+.archaeology/
+.logs/
+*.lock
+settings.local.json
