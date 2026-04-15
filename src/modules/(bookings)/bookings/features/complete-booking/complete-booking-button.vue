@@ -3,14 +3,13 @@ import type { Booking } from "../../entity";
 import { canComplete } from "../../entity";
 import { useCompleteBooking } from "./use-complete-booking";
 import { Button } from "#src/common/components/atoms/button";
-import type { UUID } from "#src/types";
 import { CircleCheck } from "lucide-vue-next";
 
 const props = defineProps<{
   booking: Booking;
 }>();
 
-const { trigger, isPending } = useCompleteBooking(() => props.booking.id as UUID);
+const { trigger, isPending } = useCompleteBooking(() => props.booking.id);
 </script>
 
 <template>

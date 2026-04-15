@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref } from "vue";
 import { useForm } from "vee-validate";
 import { definePageMeta, useSeoMeta } from "#imports";
-import type { UUID } from "#src/types";
 import {
   useProfileQuery,
   useUpdateUserMutation,
@@ -36,28 +35,17 @@ const { handleSubmit, errors, defineField, meta, setValues } = useForm<EditUserF
 const [firstName, firstNameAttrs] = defineField("firstName");
 const [lastName, lastNameAttrs] = defineField("lastName");
 
-watch(
-  profile,
-  (p) => {
-    if (p) {
-      setValues({ firstName: p.firstName, lastName: p.lastName });
-    }
-  },
-  { immediate: true },
-);
-
 function startEditing() {
+  if (!profile.value) return;
+  setValues({ firstName: profile.value.firstName, lastName: profile.value.lastName });
   isEditing.value = true;
-  if (profile.value) {
-    setValues({ firstName: profile.value.firstName, lastName: profile.value.lastName });
-  }
 }
 
 const onSubmit = handleSubmit(async (values) => {
   if (!profile.value) return;
   const ok = await runWithToast(
     updateMutation.mutateAsync,
-    { path: { id: profile.value.id as UUID }, body: values },
+    { path: { id: profile.value.id }, body: values },
     { success: "Profile updated", error: "Failed to update profile" },
   );
   if (ok) isEditing.value = false;
